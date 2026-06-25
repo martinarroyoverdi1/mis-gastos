@@ -226,7 +226,7 @@
       <div class="cat-dropdown" id="cat-dropdown" style="display:none">
         <div class="cat-dropdown-header">
           <span>Categorías</span>
-          <button onclick="selectAllCats()">Seleccionar todo</button>
+          <button id="toggle-all-btn" onclick="toggleAllCats()">Deseleccionar todo</button>
         </div>
         <div id="cat-checkboxes"></div>
       </div>
@@ -238,7 +238,7 @@
     </div>
   </div>
   <div class="dash-grid">
-    <div class="stat-card"><div class="stat-label" id="dash-count-label">Gastos (7 días)</div><div class="stat-value" id="dash-count">0</div><div class="stat-sub">transacciones</div></div>
+    <div class="stat-card"><div class="stat-label" id="dash-count-label">Total (7 días)</div><div class="stat-value" id="dash-total">$0</div><div class="stat-sub">ARS gastados</div></div>
     <div class="stat-card"><div class="stat-label">Promedio por día</div><div class="stat-value" id="dash-avg">$0</div><div class="stat-sub">ARS / día activo</div></div>
     <div class="stat-card"><div class="stat-label">Mayor gasto</div><div class="stat-value" id="dash-max">$0</div><div class="stat-sub" id="dash-max-desc">—</div></div>
     <div class="stat-card"><div class="stat-label">Categoría top</div><div class="stat-value" id="dash-top-cat" style="font-size:17px">—</div><div class="stat-sub" id="dash-top-cat-sub">—</div></div>
@@ -258,16 +258,18 @@ const SYM = {ARS:'$',USD:'$',EUR:'€'};
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxw0fxHry8xPbLk314iLV_nzfVgZjZMRChlabRxSvE8CtUxq7JjSlIiGc3T708HvdeZ/exec';
 
 let expenses = JSON.parse(localStorage.getItem('expenses_v1') || '[]');
-let activeCategories = new Set();
+let activeCategories = null; // null = todas; Set vacío = ninguna
 let evolPeriod = 7;
 let evolChart = null;
 
 function saveLocal() { localStorage.setItem('expenses_v1', JSON.stringify(expenses)); }
 
 function isVisible(e) {
-  return activeCategories.size === 0 || activeCategories.has(e.cat);
+  if (activeCategories === null) return true;
+  return activeCategories.has(e.cat);
 }
 
+/* ── SYNC STATUS ── */
 function setSyncStatus(s) {
   const el = document.getElementById('sync-status');
   if (!el) return;
@@ -275,6 +277,7 @@ function setSyncStatus(s) {
   el.textContent = m[s].text; el.style.color = m[s].color;
 }
 
+/* ── SHEET ── */
 async function sheetPost(p) { return fetch(SHEET_URL, {method:'POST',mode:'no-cors',body:JSON.stringify(p)}); }
 
 function loadFromSheet() {
@@ -295,6 +298,7 @@ function loadFromSheet() {
   document.head.appendChild(sc);
 }
 
+/* ── DATE PICKER ── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
 function openDatePicker() {
@@ -324,6 +328,7 @@ function getSelectedDate() {
   return d.toISOString();
 }
 
+/* ── ADD / DELETE ── */
 async function addExpense() {
   const desc = document.getElementById('desc').value.trim();
   const cat = document.getElementById('cat').value;
@@ -363,14 +368,17 @@ function exportData() {
   const a = document.createElement('a'); a.href=url; a.download='mis-gastos-'+todayStr()+'.json'; a.click(); URL.revokeObjectURL(url);
 }
 
+/* ── CATEGORY FILTER DROPDOWN ── */
 function buildCatCheckboxes() {
   const container = document.getElementById('cat-checkboxes');
   container.innerHTML = ALL_CATS.map(c => `
     <label class="cat-check-item">
-      <input type="checkbox" value="${c}" onchange="onCatCheck()" ${activeCategories.size===0||activeCategories.has(c)?'checked':''}>
+      <input type="checkbox" value="${c}" onchange="onCatCheck()" ${activeCategories===null||activeCategories.has(c)?'checked':''}>
       ${CAT_EMOJI[c]} ${c}
     </label>
   `).join('');
+  const tb = document.getElementById('toggle-all-btn');
+  if (tb) tb.textContent = activeCategories === null ? 'Deseleccionar todo' : 'Seleccionar todo';
 }
 
 function toggleCatDropdown(e) {
@@ -385,17 +393,15 @@ function toggleCatDropdown(e) {
 
 function onCatCheck() {
   const checked = [...document.querySelectorAll('#cat-checkboxes input:checked')].map(i => i.value);
-  if (checked.length === ALL_CATS.length || checked.length === 0) {
-    activeCategories = new Set();
-  } else {
-    activeCategories = new Set(checked);
-  }
+  activeCategories = checked.length === ALL_CATS.length ? null : new Set(checked);
+  const tb = document.getElementById('toggle-all-btn');
+  if (tb) tb.textContent = activeCategories === null ? 'Deseleccionar todo' : 'Seleccionar todo';
   updateFilterLabel();
   renderDashboard();
 }
 
-function selectAllCats() {
-  activeCategories = new Set();
+function toggleAllCats() {
+  activeCategories = activeCategories === null ? new Set() : null;
   buildCatCheckboxes();
   updateFilterLabel();
   renderDashboard();
@@ -404,9 +410,12 @@ function selectAllCats() {
 function updateFilterLabel() {
   const btn = document.getElementById('cat-filter-btn');
   const lbl = document.getElementById('cat-filter-label');
-  if (activeCategories.size === 0) {
+  if (activeCategories === null) {
     lbl.textContent = 'Todas las categorías';
     btn.classList.remove('has-filter');
+  } else if (activeCategories.size === 0) {
+    lbl.textContent = 'Sin categorías';
+    btn.classList.add('has-filter');
   } else {
     lbl.textContent = activeCategories.size === 1
       ? [...activeCategories][0]
@@ -416,13 +425,13 @@ function updateFilterLabel() {
 }
 
 document.addEventListener('click', e => {
-  const wrap = document.getElementById('cat-filter-wrap');
-  if (wrap && !wrap.contains(e.target)) {
+  if (!document.getElementById('cat-filter-wrap').contains(e.target)) {
     document.getElementById('cat-dropdown').style.display = 'none';
     document.getElementById('cat-filter-btn').classList.remove('open');
   }
 });
 
+/* ── RENDER ── */
 function lastN(n) {
   const c = new Date(); c.setDate(c.getDate()-n);
   return expenses.filter(e => new Date(e.date) >= c);
@@ -442,7 +451,7 @@ function fmtDate(iso) {
 }
 
 function renderHero() {
-  const r30 = last30();
+  const r30 = last30().filter(isVisible);
   const totals = {ARS:0,USD:0,EUR:0};
   r30.forEach(e => totals[e.currency] += e.amount);
   document.getElementById('hero-ars').innerHTML = `${fmtInt(totals.ARS)}<span class="hero-currency">ARS</span>`;
@@ -454,7 +463,7 @@ function renderHero() {
 
 function renderList() {
   const search = document.getElementById('search').value.toLowerCase();
-  let filtered = expenses.filter(e => !search || e.desc.toLowerCase().includes(search) || e.cat.toLowerCase().includes(search));
+  let filtered = expenses.filter(e => isVisible(e) && (!search || e.desc.toLowerCase().includes(search) || e.cat.toLowerCase().includes(search)));
   document.getElementById('list-count').textContent = `Historial${filtered.length?' ('+filtered.length+')':''}`;
   const el = document.getElementById('expense-list');
   if (!filtered.length) {
@@ -482,11 +491,11 @@ function renderList() {
 function renderDashboard() {
   const r30 = lastN(evolPeriod).filter(isVisible);
   const arsOnly = r30.filter(e => e.currency === 'ARS');
-  document.getElementById('dash-count-label').textContent = `Gastos (${evolPeriod} días)`;
+  document.getElementById('dash-count-label').textContent = `Total (${evolPeriod} días)`;
   document.getElementById('cat-breakdown-title').textContent = `Por categoría (${evolPeriod} días)`;
-  document.getElementById('dash-count').textContent = r30.length;
-  const days = new Set(arsOnly.map(e => new Date(e.date).toDateString())).size || 1;
   const totalARS = arsOnly.reduce((s,e) => s+e.amount, 0);
+  document.getElementById('dash-total').textContent = '$' + fmtInt(totalARS);
+  const days = new Set(arsOnly.map(e => new Date(e.date).toDateString())).size || 1;
   document.getElementById('dash-avg').textContent = '$' + fmt(totalARS/days);
   if (arsOnly.length) {
     const max = arsOnly.reduce((a,b) => a.amount>b.amount?a:b);
@@ -557,6 +566,7 @@ function showPage(name) {
 
 function renderAll() { renderHero(); renderList(); }
 
+/* ── INIT ── */
 document.getElementById('desc').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('amount').focus(); });
 document.getElementById('amount').addEventListener('keydown', e => { if (e.key==='Enter') addExpense(); });
 document.getElementById('header-date').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
