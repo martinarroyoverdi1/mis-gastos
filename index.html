@@ -168,9 +168,9 @@
         <select id="cat">
           <option value="Comida">🍽️ Comida</option>
           <option value="Transporte">🚗 Transporte</option>
-          <option value="Supermercado">🛒 Supermercado</option>
+          <option value="Super">🛒 Super</option>
           <option value="Salud">💊 Salud</option>
-          <option value="Entretenimiento">🎬 Entretenimiento</option>
+          <option value="Ocio">🎬 Ocio</option>
           <option value="Ropa">👕 Ropa</option>
           <option value="Servicios">💡 Servicios</option>
           <option value="Educación">📚 Educación</option>
@@ -232,9 +232,9 @@
       </div>
     </div>
     <div class="period-selector" style="margin-bottom:0">
-      <button class="period-btn active" onclick="setPeriod(7,this)">7 días</button>
-      <button class="period-btn" onclick="setPeriod(14,this)">14 días</button>
-      <button class="period-btn" onclick="setPeriod(30,this)">30 días</button>
+      <button class="period-btn active" onclick="setPeriod(7,this)">7d</button>
+      <button class="period-btn" onclick="setPeriod(14,this)">14d</button>
+      <button class="period-btn" onclick="setPeriod(30,this)">30d</button>
     </div>
   </div>
   <div class="dash-grid">
@@ -251,9 +251,9 @@
 </div></div>
 
 <script>
-const ALL_CATS = ['Comida','Transporte','Supermercado','Salud','Entretenimiento','Ropa','Servicios','Educación','Viajes','Tecnología','Hogar','Regalos','Otros'];
-const CAT_BG = {'Comida':'rgba(255,159,64,0.18)','Transporte':'rgba(10,132,255,0.18)','Supermercado':'rgba(48,209,88,0.18)','Salud':'rgba(255,69,58,0.18)','Entretenimiento':'rgba(191,90,242,0.18)','Ropa':'rgba(255,214,10,0.18)','Servicios':'rgba(90,200,250,0.18)','Educación':'rgba(108,99,255,0.18)','Viajes':'rgba(48,209,88,0.18)','Tecnología':'rgba(160,160,160,0.18)','Hogar':'rgba(255,159,64,0.18)','Regalos':'rgba(255,105,180,0.18)','Otros':'rgba(100,100,100,0.18)'};
-const CAT_EMOJI = {'Comida':'🍽️','Transporte':'🚗','Supermercado':'🛒','Salud':'💊','Entretenimiento':'🎬','Ropa':'👕','Servicios':'💡','Educación':'📚','Viajes':'✈️','Tecnología':'💻','Hogar':'🏠','Regalos':'🎁','Otros':'📦'};
+const ALL_CATS = ['Comida','Transporte','Super','Salud','Ocio','Ropa','Servicios','Educación','Viajes','Tecnología','Hogar','Regalos','Otros'];
+const CAT_BG = {'Comida':'rgba(255,159,64,0.18)','Transporte':'rgba(10,132,255,0.18)','Super':'rgba(48,209,88,0.18)','Salud':'rgba(255,69,58,0.18)','Ocio':'rgba(191,90,242,0.18)','Ropa':'rgba(255,214,10,0.18)','Servicios':'rgba(90,200,250,0.18)','Educación':'rgba(108,99,255,0.18)','Viajes':'rgba(48,209,88,0.18)','Tecnología':'rgba(160,160,160,0.18)','Hogar':'rgba(255,159,64,0.18)','Regalos':'rgba(255,105,180,0.18)','Otros':'rgba(100,100,100,0.18)'};
+const CAT_EMOJI = {'Comida':'🍽️','Transporte':'🚗','Super':'🛒','Salud':'💊','Ocio':'🎬','Ropa':'👕','Servicios':'💡','Educación':'📚','Viajes':'✈️','Tecnología':'💻','Hogar':'🏠','Regalos':'🎁','Otros':'📦'};
 const SYM = {ARS:'$',USD:'$',EUR:'€'};
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxw0fxHry8xPbLk314iLV_nzfVgZjZMRChlabRxSvE8CtUxq7JjSlIiGc3T708HvdeZ/exec';
 
