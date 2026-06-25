@@ -231,19 +231,23 @@
         <div id="cat-checkboxes"></div>
       </div>
     </div>
+    <div class="period-selector" style="margin-bottom:0">
+      <button class="period-btn active" onclick="setPeriod(7,this)">7 días</button>
+      <button class="period-btn" onclick="setPeriod(14,this)">14 días</button>
+      <button class="period-btn" onclick="setPeriod(30,this)">30 días</button>
+    </div>
   </div>
   <div class="dash-grid">
-    <div class="stat-card"><div class="stat-label">Gastos (30 días)</div><div class="stat-value" id="dash-count">0</div><div class="stat-sub">transacciones</div></div>
+    <div class="stat-card"><div class="stat-label" id="dash-count-label">Gastos (7 días)</div><div class="stat-value" id="dash-count">0</div><div class="stat-sub">transacciones</div></div>
     <div class="stat-card"><div class="stat-label">Promedio por día</div><div class="stat-value" id="dash-avg">$0</div><div class="stat-sub">ARS / día activo</div></div>
     <div class="stat-card"><div class="stat-label">Mayor gasto</div><div class="stat-value" id="dash-max">$0</div><div class="stat-sub" id="dash-max-desc">—</div></div>
     <div class="stat-card"><div class="stat-label">Categoría top</div><div class="stat-value" id="dash-top-cat" style="font-size:17px">—</div><div class="stat-sub" id="dash-top-cat-sub">—</div></div>
   </div>
   <div class="card">
     <div class="card-title"><div class="dot"></div>Evolución de gastos</div>
-    <div class="period-selector"><button class="period-btn active" onclick="setPeriod(7,this)">7 días</button><button class="period-btn" onclick="setPeriod(14,this)">14 días</button><button class="period-btn" onclick="setPeriod(30,this)">30 días</button></div>
     <div class="chart-wrap" style="height:200px;"><canvas id="chart-evol"></canvas></div>
   </div>
-  <div class="card"><div class="card-title"><div class="dot" style="background:#FFD60A"></div>Por categoría (30 días)</div><div class="cat-breakdown" id="cat-breakdown"></div></div>
+  <div class="card"><div class="card-title"><div class="dot" style="background:#FFD60A"></div><span id="cat-breakdown-title">Por categoría (7 días)</span></div><div class="cat-breakdown" id="cat-breakdown"></div></div>
 </div></div>
 
 <script>
@@ -254,7 +258,7 @@ const SYM = {ARS:'$',USD:'$',EUR:'€'};
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxw0fxHry8xPbLk314iLV_nzfVgZjZMRChlabRxSvE8CtUxq7JjSlIiGc3T708HvdeZ/exec';
 
 let expenses = JSON.parse(localStorage.getItem('expenses_v1') || '[]');
-let activeCategories = new Set(); // vacío = todas
+let activeCategories = new Set();
 let evolPeriod = 7;
 let evolChart = null;
 
@@ -264,7 +268,6 @@ function isVisible(e) {
   return activeCategories.size === 0 || activeCategories.has(e.cat);
 }
 
-/* ── SYNC STATUS ── */
 function setSyncStatus(s) {
   const el = document.getElementById('sync-status');
   if (!el) return;
@@ -272,7 +275,6 @@ function setSyncStatus(s) {
   el.textContent = m[s].text; el.style.color = m[s].color;
 }
 
-/* ── SHEET ── */
 async function sheetPost(p) { return fetch(SHEET_URL, {method:'POST',mode:'no-cors',body:JSON.stringify(p)}); }
 
 function loadFromSheet() {
@@ -293,7 +295,6 @@ function loadFromSheet() {
   document.head.appendChild(sc);
 }
 
-/* ── DATE PICKER ── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
 function openDatePicker() {
@@ -323,7 +324,6 @@ function getSelectedDate() {
   return d.toISOString();
 }
 
-/* ── ADD / DELETE ── */
 async function addExpense() {
   const desc = document.getElementById('desc').value.trim();
   const cat = document.getElementById('cat').value;
@@ -363,7 +363,6 @@ function exportData() {
   const a = document.createElement('a'); a.href=url; a.download='mis-gastos-'+todayStr()+'.json'; a.click(); URL.revokeObjectURL(url);
 }
 
-/* ── CATEGORY FILTER DROPDOWN ── */
 function buildCatCheckboxes() {
   const container = document.getElementById('cat-checkboxes');
   container.innerHTML = ALL_CATS.map(c => `
@@ -392,45 +391,43 @@ function onCatCheck() {
     activeCategories = new Set(checked);
   }
   updateFilterLabel();
-  renderAll();
+  renderDashboard();
 }
 
 function selectAllCats() {
   activeCategories = new Set();
   buildCatCheckboxes();
   updateFilterLabel();
-  renderAll();
+  renderDashboard();
 }
 
 function updateFilterLabel() {
   const btn = document.getElementById('cat-filter-btn');
   const lbl = document.getElementById('cat-filter-label');
-  const sum = document.getElementById('filter-summary');
   if (activeCategories.size === 0) {
     lbl.textContent = 'Todas las categorías';
     btn.classList.remove('has-filter');
-    sum.textContent = '';
   } else {
     lbl.textContent = activeCategories.size === 1
       ? [...activeCategories][0]
       : `${activeCategories.size} categorías`;
     btn.classList.add('has-filter');
-    sum.textContent = '';
   }
 }
 
 document.addEventListener('click', e => {
-  if (!document.getElementById('cat-filter-wrap').contains(e.target)) {
+  const wrap = document.getElementById('cat-filter-wrap');
+  if (wrap && !wrap.contains(e.target)) {
     document.getElementById('cat-dropdown').style.display = 'none';
     document.getElementById('cat-filter-btn').classList.remove('open');
   }
 });
 
-/* ── RENDER ── */
-function last30() {
-  const c = new Date(); c.setDate(c.getDate()-30);
+function lastN(n) {
+  const c = new Date(); c.setDate(c.getDate()-n);
   return expenses.filter(e => new Date(e.date) >= c);
 }
+function last30() { return lastN(30); }
 
 function fmt(n) { return n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtInt(n) { return Math.round(n).toLocaleString('es-AR'); }
@@ -445,7 +442,7 @@ function fmtDate(iso) {
 }
 
 function renderHero() {
-  const r30 = last30().filter(isVisible);
+  const r30 = last30();
   const totals = {ARS:0,USD:0,EUR:0};
   r30.forEach(e => totals[e.currency] += e.amount);
   document.getElementById('hero-ars').innerHTML = `${fmtInt(totals.ARS)}<span class="hero-currency">ARS</span>`;
@@ -457,11 +454,11 @@ function renderHero() {
 
 function renderList() {
   const search = document.getElementById('search').value.toLowerCase();
-  let filtered = expenses.filter(e => isVisible(e) && (!search || e.desc.toLowerCase().includes(search) || e.cat.toLowerCase().includes(search)));
+  let filtered = expenses.filter(e => !search || e.desc.toLowerCase().includes(search) || e.cat.toLowerCase().includes(search));
   document.getElementById('list-count').textContent = `Historial${filtered.length?' ('+filtered.length+')':''}`;
   const el = document.getElementById('expense-list');
   if (!filtered.length) {
-    el.innerHTML = `<div class="empty-state"><div class="icon">🧾</div><p>${search||activeCategories.size>0?'Sin resultados para ese filtro.':'Todavía no hay gastos cargados.'}</p></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="icon">🧾</div><p>${search?'Sin resultados para esa búsqueda.':'Todavía no hay gastos cargados.'}</p></div>`;
     return;
   }
   el.innerHTML = filtered.map(e => `
@@ -483,8 +480,10 @@ function renderList() {
 }
 
 function renderDashboard() {
-  const r30 = last30().filter(isVisible);
+  const r30 = lastN(evolPeriod).filter(isVisible);
   const arsOnly = r30.filter(e => e.currency === 'ARS');
+  document.getElementById('dash-count-label').textContent = `Gastos (${evolPeriod} días)`;
+  document.getElementById('cat-breakdown-title').textContent = `Por categoría (${evolPeriod} días)`;
   document.getElementById('dash-count').textContent = r30.length;
   const days = new Set(arsOnly.map(e => new Date(e.date).toDateString())).size || 1;
   const totalARS = arsOnly.reduce((s,e) => s+e.amount, 0);
@@ -546,7 +545,7 @@ function renderEvolChart() {
   });
 }
 
-function setPeriod(p,btn) { evolPeriod=p; document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderEvolChart(); }
+function setPeriod(p,btn) { evolPeriod=p; document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderDashboard(); }
 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -558,7 +557,6 @@ function showPage(name) {
 
 function renderAll() { renderHero(); renderList(); }
 
-/* ── INIT ── */
 document.getElementById('desc').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('amount').focus(); });
 document.getElementById('amount').addEventListener('keydown', e => { if (e.key==='Enter') addExpense(); });
 document.getElementById('header-date').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
