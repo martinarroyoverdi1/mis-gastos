@@ -7,10 +7,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --bg: #121212; --surface: #1C1C1C; --surface2: #2D2D2D; --surface3: #3A3A3A; --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12); --text: #F5F5F5; --text2: #A0A0A0; --text3: #636363; --accent: #6C63FF; --accent2: #8B84FF; --red: #FF453A; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; }
+  :root { --bg: #121212; --surface: #1C1C1C; --surface2: #2D2D2D; --surface3: #3A3A3A; --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12); --text: #F5F5F5; --text2: #A0A0A0; --text3: #636363; --accent: #6C63FF; --accent2: #8B84FF; --red: #FF453A; --header-bg: rgba(18,18,18,0.92); }
+  body.light { --bg: #F0EBE0; --surface: #FAF7F2; --surface2: #EDE8DE; --surface3: #E0D9CC; --border: rgba(27,58,107,0.10); --border2: rgba(27,58,107,0.18); --text: #1A1A2E; --text2: #4A5568; --text3: #8A94A6; --accent: #1B3A6B; --accent2: #2A5298; --red: #C0392B; --header-bg: rgba(240,235,224,0.92); }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; transition: background 0.3s, color 0.3s; }
 
-  header { background: rgba(18,18,18,0.92); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; padding: 16px 20px 12px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  header { background: var(--header-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; padding: 16px 20px 12px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; transition: background 0.3s; }
   header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
   header p { font-size: 11px; color: var(--text3); margin-top: 2px; }
   #sync-status { font-size: 11px; font-weight: 500; color: #30D158; margin-top: 4px; transition: color 0.3s; }
@@ -117,9 +118,12 @@
   .empty-state .icon { font-size: 36px; margin-bottom: 10px; } .empty-state p { font-size: 13px; }
   .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .list-title { font-size: 14px; font-weight: 600; color: var(--text); }
-  .backup-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .backup-row { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
   .btn-backup { flex: 1; height: 38px; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: border-color 0.15s, color 0.15s; }
   .btn-backup:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-theme { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s, background 0.3s; flex-shrink: 0; }
+  .btn-theme:hover { border-color: var(--accent); color: var(--accent); }
+  body.light .hero-card { background: linear-gradient(135deg, #1B3A6B 0%, #2A5298 100%); }
 
   /* DASHBOARD */
   .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
@@ -218,6 +222,7 @@
     <div class="backup-row">
       <button class="btn-backup" onclick="loadFromSheet()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-3.73"/></svg>Sincronizar</button>
       <button class="btn-backup" onclick="exportData()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar backup</button>
+      <button class="btn-theme" id="theme-btn" onclick="toggleTheme()">🌙</button>
     </div>
     <div class="list-header"><div class="list-title" id="list-count">Historial</div></div>
     <div class="search-wrap">
@@ -317,7 +322,7 @@ const SYM = {ARS:'$',USD:'$',EUR:'€'};
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbymvCsjlcuGNRU9wHygE5B1JJVIv2O7-CPtsd5U2SaXWjgplFRHu0Fm1ceqn_M_gB9W/exec';
 
 let expenses = JSON.parse(localStorage.getItem('expenses_v1') || '[]');
-let activeCategories = null;
+let activeCategories = null; // null = todas; Set vacío = ninguna
 let evolPeriod = 7;
 let evolChart = null;
 
@@ -328,6 +333,7 @@ function isVisible(e) {
   return activeCategories.has(e.cat);
 }
 
+/* ── SYNC STATUS ── */
 function setSyncStatus(s) {
   const el = document.getElementById('sync-status');
   if (!el) return;
@@ -335,6 +341,7 @@ function setSyncStatus(s) {
   el.textContent = m[s].text; el.style.color = m[s].color;
 }
 
+/* ── SHEET ── */
 async function sheetPost(p) { return fetch(SHEET_URL, {method:'POST',mode:'no-cors',body:JSON.stringify(p)}); }
 
 function loadFromSheet() {
@@ -355,6 +362,7 @@ function loadFromSheet() {
   document.head.appendChild(sc);
 }
 
+/* ── DATE PICKER ── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
 function openDatePicker() {
@@ -367,16 +375,24 @@ function onDateChange() {
   const val = document.getElementById('expense-date').value;
   const lbl = document.getElementById('date-label');
   const btn = document.getElementById('date-display');
-  if (!val || val === todayStr()) { lbl.textContent = 'Hoy'; btn.classList.remove('date-set'); }
-  else { const d = new Date(val + 'T12:00:00'); lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'}); btn.classList.add('date-set'); }
+  if (!val || val === todayStr()) {
+    lbl.textContent = 'Hoy';
+    btn.classList.remove('date-set');
+  } else {
+    const d = new Date(val + 'T12:00:00');
+    lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'});
+    btn.classList.add('date-set');
+  }
 }
 
 function getSelectedDate() {
   const val = document.getElementById('expense-date').value;
   if (!val) return new Date().toISOString();
-  return new Date(val + 'T' + new Date().toTimeString().slice(0,8)).toISOString();
+  const d = new Date(val + 'T' + new Date().toTimeString().slice(0,8));
+  return d.toISOString();
 }
 
+/* ── ADD / DELETE ── */
 async function addExpense() {
   const desc = document.getElementById('desc').value.trim();
   const cat = document.getElementById('cat').value;
@@ -384,6 +400,7 @@ async function addExpense() {
   const currency = document.getElementById('currency').value;
   if (!desc) { flash('desc'); return; }
   if (!amount || amount <= 0) { flash('amount'); return; }
+
   const expense = {id: Date.now(), desc, cat, amount, currency, date: getSelectedDate()};
   expenses.unshift(expense);
   expenses.sort((a,b) => new Date(b.date) - new Date(a.date));
@@ -409,6 +426,7 @@ async function deleteExpense(id) {
   try { await sheetPost({action:'delete', id}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
 }
 
+/* ── EDIT ── */
 let editingId = null;
 
 function openEdit(id) {
@@ -419,12 +437,14 @@ function openEdit(id) {
   document.getElementById('edit-cat').value = e.cat;
   document.getElementById('edit-amount').value = e.amount;
   document.getElementById('edit-currency').value = e.currency;
-  document.getElementById('edit-expense-date').value = new Date(e.date).toISOString().slice(0,10);
+  const dateStr = new Date(e.date).toISOString().slice(0,10);
+  document.getElementById('edit-expense-date').value = dateStr;
   onEditDateChange();
   document.getElementById('edit-modal').classList.add('open');
 }
 
 function closeEditBtn() { document.getElementById('edit-modal').classList.remove('open'); }
+
 function closeEdit(ev) { if (ev.target === document.getElementById('edit-modal')) closeEditBtn(); }
 
 function openEditDatePicker() {
@@ -437,7 +457,11 @@ function onEditDateChange() {
   const lbl = document.getElementById('edit-date-label');
   const btn = document.getElementById('edit-date-display');
   if (!val || val === todayStr()) { lbl.textContent = 'Hoy'; btn.classList.remove('date-set'); }
-  else { const d = new Date(val + 'T12:00:00'); lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'}); btn.classList.add('date-set'); }
+  else {
+    const d = new Date(val + 'T12:00:00');
+    lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'});
+    btn.classList.add('date-set');
+  }
 }
 
 async function saveEdit() {
@@ -448,7 +472,11 @@ async function saveEdit() {
   const dateVal = document.getElementById('edit-expense-date').value;
   if (!desc) { flash('edit-desc'); return; }
   if (!amount || amount <= 0) { flash('edit-amount'); return; }
-  const dateISO = dateVal ? new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString() : new Date().toISOString();
+
+  const dateISO = dateVal
+    ? new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString()
+    : new Date().toISOString();
+
   const idx = expenses.findIndex(x => x.id === editingId);
   if (idx === -1) return;
   expenses[idx] = { ...expenses[idx], desc, cat, amount, currency, date: dateISO };
@@ -466,6 +494,7 @@ function exportData() {
   const a = document.createElement('a'); a.href=url; a.download='mis-gastos-'+todayStr()+'.json'; a.click(); URL.revokeObjectURL(url);
 }
 
+/* ── CATEGORY FILTER DROPDOWN ── */
 function buildCatCheckboxes() {
   const container = document.getElementById('cat-checkboxes');
   container.innerHTML = ALL_CATS.map(c => `
@@ -507,9 +536,18 @@ function toggleAllCats() {
 function updateFilterLabel() {
   const btn = document.getElementById('cat-filter-btn');
   const lbl = document.getElementById('cat-filter-label');
-  if (activeCategories === null) { lbl.textContent = 'Todas las categorías'; btn.classList.remove('has-filter'); }
-  else if (activeCategories.size === 0) { lbl.textContent = 'Sin categorías'; btn.classList.add('has-filter'); }
-  else { lbl.textContent = activeCategories.size === 1 ? [...activeCategories][0] : `${activeCategories.size} categorías`; btn.classList.add('has-filter'); }
+  if (activeCategories === null) {
+    lbl.textContent = 'Todas las categorías';
+    btn.classList.remove('has-filter');
+  } else if (activeCategories.size === 0) {
+    lbl.textContent = 'Sin categorías';
+    btn.classList.add('has-filter');
+  } else {
+    lbl.textContent = activeCategories.size === 1
+      ? [...activeCategories][0]
+      : `${activeCategories.size} categorías`;
+    btn.classList.add('has-filter');
+  }
 }
 
 document.addEventListener('click', e => {
@@ -519,6 +557,7 @@ document.addEventListener('click', e => {
   }
 });
 
+/* ── RENDER ── */
 function lastN(n) {
   const c = new Date(); c.setDate(c.getDate()-n);
   return expenses.filter(e => new Date(e.date) >= c);
@@ -657,6 +696,16 @@ function showPage(name) {
 }
 
 function renderAll() { renderHero(); renderList(); }
+
+/* ── INIT ── */
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-btn').textContent = isLight ? '🌑' : '🌙';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'light') { document.body.classList.add('light'); document.getElementById('theme-btn').textContent = '🌑'; }
 
 document.getElementById('desc').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('amount').focus(); });
 document.getElementById('amount').addEventListener('keydown', e => { if (e.key==='Enter') addExpense(); });
