@@ -150,6 +150,8 @@
     .form-grid.three { grid-template-columns: 1fr 1fr; }
     .hero-amount { font-size: 34px; }
     .cat-dropdown { min-width: 180px; }
+    .btn-backup { flex: 0 0 44px; }
+    .btn-backup span { display: none; }
   }
 </style>
 </head>
@@ -323,13 +325,18 @@ const SYM = {ARS:'$',USD:'$',EUR:'€'};
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbymvCsjlcuGNRU9wHygE5B1JJVIv2O7-CPtsd5U2SaXWjgplFRHu0Fm1ceqn_M_gB9W/exec';
 
 let expenses = JSON.parse(localStorage.getItem('expenses_v1') || '[]');
-let activeCategories = null;
+let activeCategories = null; // null = todas; Set vacío = ninguna
 let evolPeriod = 7;
 let evolChart = null;
 
 function saveLocal() { localStorage.setItem('expenses_v1', JSON.stringify(expenses)); }
-function isVisible(e) { if (activeCategories === null) return true; return activeCategories.has(e.cat); }
 
+function isVisible(e) {
+  if (activeCategories === null) return true;
+  return activeCategories.has(e.cat);
+}
+
+/* ── SYNC STATUS ── */
 function setSyncStatus(s) {
   const el = document.getElementById('sync-status');
   if (!el) return;
@@ -337,6 +344,7 @@ function setSyncStatus(s) {
   el.textContent = m[s].text; el.style.color = m[s].color;
 }
 
+/* ── SHEET ── */
 async function sheetPost(p) { return fetch(SHEET_URL, {method:'POST',mode:'no-cors',body:JSON.stringify(p)}); }
 
 function loadFromSheet() {
@@ -357,6 +365,7 @@ function loadFromSheet() {
   document.head.appendChild(sc);
 }
 
+/* ── DATE PICKER ── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
 function openDatePicker() {
@@ -369,16 +378,24 @@ function onDateChange() {
   const val = document.getElementById('expense-date').value;
   const lbl = document.getElementById('date-label');
   const btn = document.getElementById('date-display');
-  if (!val || val === todayStr()) { lbl.textContent = 'Hoy'; btn.classList.remove('date-set'); }
-  else { const d = new Date(val + 'T12:00:00'); lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'}); btn.classList.add('date-set'); }
+  if (!val || val === todayStr()) {
+    lbl.textContent = 'Hoy';
+    btn.classList.remove('date-set');
+  } else {
+    const d = new Date(val + 'T12:00:00');
+    lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'});
+    btn.classList.add('date-set');
+  }
 }
 
 function getSelectedDate() {
   const val = document.getElementById('expense-date').value;
   if (!val) return new Date().toISOString();
-  return new Date(val + 'T' + new Date().toTimeString().slice(0,8)).toISOString();
+  const d = new Date(val + 'T' + new Date().toTimeString().slice(0,8));
+  return d.toISOString();
 }
 
+/* ── ADD / DELETE ── */
 async function addExpense() {
   const desc = document.getElementById('desc').value.trim();
   const cat = document.getElementById('cat').value;
@@ -386,11 +403,16 @@ async function addExpense() {
   const currency = document.getElementById('currency').value;
   if (!desc) { flash('desc'); return; }
   if (!amount || amount <= 0) { flash('amount'); return; }
+
   const expense = {id: Date.now(), desc, cat, amount, currency, date: getSelectedDate()};
-  expenses.unshift(expense); expenses.sort((a,b) => new Date(b.date) - new Date(a.date));
+  expenses.unshift(expense);
+  expenses.sort((a,b) => new Date(b.date) - new Date(a.date));
   saveLocal();
-  document.getElementById('desc').value = ''; document.getElementById('amount').value = '';
-  document.getElementById('expense-date').value = ''; onDateChange(); renderAll();
+  document.getElementById('desc').value = '';
+  document.getElementById('amount').value = '';
+  document.getElementById('expense-date').value = '';
+  onDateChange();
+  renderAll();
   setSyncStatus('syncing');
   try { await sheetPost({action:'add', expense}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
 }
@@ -407,21 +429,25 @@ async function deleteExpense(id) {
   try { await sheetPost({action:'delete', id}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
 }
 
+/* ── EDIT ── */
 let editingId = null;
 
 function openEdit(id) {
-  const e = expenses.find(x => x.id === id); if (!e) return;
+  const e = expenses.find(x => x.id === id);
+  if (!e) return;
   editingId = id;
   document.getElementById('edit-desc').value = e.desc;
   document.getElementById('edit-cat').value = e.cat;
   document.getElementById('edit-amount').value = e.amount;
   document.getElementById('edit-currency').value = e.currency;
-  document.getElementById('edit-expense-date').value = new Date(e.date).toISOString().slice(0,10);
+  const dateStr = new Date(e.date).toISOString().slice(0,10);
+  document.getElementById('edit-expense-date').value = dateStr;
   onEditDateChange();
   document.getElementById('edit-modal').classList.add('open');
 }
 
 function closeEditBtn() { document.getElementById('edit-modal').classList.remove('open'); }
+
 function closeEdit(ev) { if (ev.target === document.getElementById('edit-modal')) closeEditBtn(); }
 
 function openEditDatePicker() {
@@ -434,7 +460,11 @@ function onEditDateChange() {
   const lbl = document.getElementById('edit-date-label');
   const btn = document.getElementById('edit-date-display');
   if (!val || val === todayStr()) { lbl.textContent = 'Hoy'; btn.classList.remove('date-set'); }
-  else { const d = new Date(val + 'T12:00:00'); lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'}); btn.classList.add('date-set'); }
+  else {
+    const d = new Date(val + 'T12:00:00');
+    lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'});
+    btn.classList.add('date-set');
+  }
 }
 
 async function saveEdit() {
@@ -445,11 +475,18 @@ async function saveEdit() {
   const dateVal = document.getElementById('edit-expense-date').value;
   if (!desc) { flash('edit-desc'); return; }
   if (!amount || amount <= 0) { flash('edit-amount'); return; }
-  const dateISO = dateVal ? new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString() : new Date().toISOString();
-  const idx = expenses.findIndex(x => x.id === editingId); if (idx === -1) return;
+
+  const dateISO = dateVal
+    ? new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString()
+    : new Date().toISOString();
+
+  const idx = expenses.findIndex(x => x.id === editingId);
+  if (idx === -1) return;
   expenses[idx] = { ...expenses[idx], desc, cat, amount, currency, date: dateISO };
   expenses.sort((a,b) => new Date(b.date) - new Date(a.date));
-  saveLocal(); closeEditBtn(); renderAll();
+  saveLocal();
+  closeEditBtn();
+  renderAll();
   setSyncStatus('syncing');
   try { await sheetPost({action:'update', expense: expenses.find(x => x.id === editingId)}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
 }
@@ -460,6 +497,7 @@ function exportData() {
   const a = document.createElement('a'); a.href=url; a.download='mis-gastos-'+todayStr()+'.json'; a.click(); URL.revokeObjectURL(url);
 }
 
+/* ── CATEGORY FILTER DROPDOWN ── */
 function buildCatCheckboxes() {
   const container = document.getElementById('cat-checkboxes');
   container.innerHTML = ALL_CATS.map(c => `
@@ -487,20 +525,32 @@ function onCatCheck() {
   activeCategories = checked.length === ALL_CATS.length ? null : new Set(checked);
   const tb = document.getElementById('toggle-all-btn');
   if (tb) tb.textContent = activeCategories === null ? 'Deseleccionar todo' : 'Seleccionar todo';
-  updateFilterLabel(); renderDashboard();
+  updateFilterLabel();
+  renderDashboard();
 }
 
 function toggleAllCats() {
   activeCategories = activeCategories === null ? new Set() : null;
-  buildCatCheckboxes(); updateFilterLabel(); renderDashboard();
+  buildCatCheckboxes();
+  updateFilterLabel();
+  renderDashboard();
 }
 
 function updateFilterLabel() {
   const btn = document.getElementById('cat-filter-btn');
   const lbl = document.getElementById('cat-filter-label');
-  if (activeCategories === null) { lbl.textContent = 'Todas las categorías'; btn.classList.remove('has-filter'); }
-  else if (activeCategories.size === 0) { lbl.textContent = 'Sin categorías'; btn.classList.add('has-filter'); }
-  else { lbl.textContent = activeCategories.size === 1 ? [...activeCategories][0] : `${activeCategories.size} categorías`; btn.classList.add('has-filter'); }
+  if (activeCategories === null) {
+    lbl.textContent = 'Todas las categorías';
+    btn.classList.remove('has-filter');
+  } else if (activeCategories.size === 0) {
+    lbl.textContent = 'Sin categorías';
+    btn.classList.add('has-filter');
+  } else {
+    lbl.textContent = activeCategories.size === 1
+      ? [...activeCategories][0]
+      : `${activeCategories.size} categorías`;
+    btn.classList.add('has-filter');
+  }
 }
 
 document.addEventListener('click', e => {
@@ -510,8 +560,13 @@ document.addEventListener('click', e => {
   }
 });
 
-function lastN(n) { const c = new Date(); c.setDate(c.getDate()-n); return expenses.filter(e => new Date(e.date) >= c); }
+/* ── RENDER ── */
+function lastN(n) {
+  const c = new Date(); c.setDate(c.getDate()-n);
+  return expenses.filter(e => new Date(e.date) >= c);
+}
 function last30() { return lastN(30); }
+
 function fmt(n) { return n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtInt(n) { return Math.round(n).toLocaleString('es-AR'); }
 
@@ -621,8 +676,6 @@ function renderEvolChart() {
   const lineColor = isLight ? '#1B3A6B' : '#6C63FF';
   const gradTop = isLight ? 'rgba(27,58,107,0.25)' : 'rgba(108,99,255,0.35)';
   const gradBot = isLight ? 'rgba(27,58,107,0.02)' : 'rgba(108,99,255,0.02)';
-  const tickColor = isLight ? '#6B7A8D' : '#636363';
-  const gridColor = isLight ? 'rgba(27,58,107,0.06)' : 'rgba(255,255,255,0.04)';
   const grad = ctx.createLinearGradient(0,0,0,200);
   grad.addColorStop(0, gradTop); grad.addColorStop(1, gradBot);
   evolChart = new Chart(ctx, {
@@ -632,8 +685,8 @@ function renderEvolChart() {
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{backgroundColor:'#2D2D2D',titleColor:'#A0A0A0',bodyColor:'#F5F5F5',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString('es-AR')}}},
       scales:{
-        x:{ticks:{color:tickColor,font:{size:10},maxRotation:0},grid:{color:gridColor}},
-        y:{ticks:{color:tickColor,font:{size:10},callback:v=>'$'+(v>=1000?Math.round(v/1000)+'k':v)},grid:{color:gridColor},beginAtZero:true}
+        x:{ticks:{color:'#636363',font:{size:10},maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#636363',font:{size:10},callback:v=>'$'+(v>=1000?Math.round(v/1000)+'k':v)},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true}
       }
     }
   });
@@ -651,6 +704,7 @@ function showPage(name) {
 
 function renderAll() { renderHero(); renderList(); }
 
+/* ── INIT ── */
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
   document.getElementById('theme-btn').textContent = isLight ? '🌑' : '🌙';
