@@ -76,8 +76,9 @@
   .date-btn { height: 44px; border-radius: 12px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 14px; font-family: inherit; font-weight: 500; padding: 0 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: border-color 0.15s, color 0.15s; white-space: nowrap; }
   .date-btn.date-set { color: var(--text); border-color: var(--accent); }
   .date-btn svg { flex-shrink: 0; }
-  .date-field { position: relative; }
-  input[type="date"].hidden-date { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1; }
+  .date-field { position: relative; height: 44px; }
+  .date-field .date-btn { position: absolute; inset: 0; width: 100%; pointer-events: none; }
+  input[type="date"].hidden-date { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 2; pointer-events: all; -webkit-appearance: none; }
 
   .btn-add { width: 100%; height: 44px; border-radius: 12px; background: var(--accent); color: white; font-size: 14px; font-weight: 600; font-family: inherit; border: none; cursor: pointer; transition: background 0.15s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-add:hover { background: var(--accent2); } .btn-add:active { transform: scale(0.99); }
