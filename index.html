@@ -118,11 +118,11 @@
   .empty-state .icon { font-size: 36px; margin-bottom: 10px; } .empty-state p { font-size: 13px; }
   .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .list-title { font-size: 14px; font-weight: 600; color: var(--text); }
-  .backup-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: nowrap; }
-  .btn-backup { flex: 1; min-width: 0; height: 38px; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: border-color 0.15s, color 0.15s; overflow: hidden; }
+  .backup-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+  .btn-backup { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s; }
   .btn-backup:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-backup span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .btn-theme { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s, background 0.3s; flex-shrink: 0; }
+  .btn-backup span { display: none; }
+  .btn-theme { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s, background 0.3s; }
   .btn-theme:hover { border-color: var(--accent); color: var(--accent); }
   body.light .hero-card { background: linear-gradient(135deg, #1B3A6B 0%, #2A5298 100%); }
 
@@ -150,8 +150,6 @@
     .form-grid.three { grid-template-columns: 1fr 1fr; }
     .hero-amount { font-size: 34px; }
     .cat-dropdown { min-width: 180px; }
-    .btn-backup { flex: 0 0 44px; }
-    .btn-backup span { display: none; }
   }
 </style>
 </head>
