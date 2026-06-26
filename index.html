@@ -314,10 +314,10 @@ const ALL_CATS = ['Comida','Transporte','Super','Salud','Ocio','Ropa','Servicios
 const CAT_BG = {'Comida':'rgba(255,159,64,0.18)','Transporte':'rgba(10,132,255,0.18)','Super':'rgba(48,209,88,0.18)','Salud':'rgba(255,69,58,0.18)','Ocio':'rgba(191,90,242,0.18)','Ropa':'rgba(255,214,10,0.18)','Servicios':'rgba(90,200,250,0.18)','Educación':'rgba(108,99,255,0.18)','Viajes':'rgba(48,209,88,0.18)','Tecnología':'rgba(160,160,160,0.18)','Hogar':'rgba(255,159,64,0.18)','Regalos':'rgba(255,105,180,0.18)','Otros':'rgba(100,100,100,0.18)'};
 const CAT_EMOJI = {'Comida':'🍽️','Transporte':'🚗','Super':'🛒','Salud':'💊','Ocio':'🎬','Ropa':'👕','Servicios':'💡','Educación':'📚','Viajes':'✈️','Tecnología':'💻','Hogar':'🏠','Regalos':'🎁','Otros':'📦'};
 const SYM = {ARS:'$',USD:'$',EUR:'€'};
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxw0fxHry8xPbLk314iLV_nzfVgZjZMRChlabRxSvE8CtUxq7JjSlIiGc3T708HvdeZ/exec';
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbymvCsjlcuGNRU9wHygE5B1JJVIv2O7-CPtsd5U2SaXWjgplFRHu0Fm1ceqn_M_gB9W/exec';
 
 let expenses = JSON.parse(localStorage.getItem('expenses_v1') || '[]');
-let activeCategories = null; // null = todas; Set vacío = ninguna
+let activeCategories = null;
 let evolPeriod = 7;
 let evolChart = null;
 
@@ -328,7 +328,6 @@ function isVisible(e) {
   return activeCategories.has(e.cat);
 }
 
-/* ── SYNC STATUS ── */
 function setSyncStatus(s) {
   const el = document.getElementById('sync-status');
   if (!el) return;
@@ -336,7 +335,6 @@ function setSyncStatus(s) {
   el.textContent = m[s].text; el.style.color = m[s].color;
 }
 
-/* ── SHEET ── */
 async function sheetPost(p) { return fetch(SHEET_URL, {method:'POST',mode:'no-cors',body:JSON.stringify(p)}); }
 
 function loadFromSheet() {
@@ -357,7 +355,6 @@ function loadFromSheet() {
   document.head.appendChild(sc);
 }
 
-/* ── DATE PICKER ── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
 function openDatePicker() {
@@ -370,24 +367,16 @@ function onDateChange() {
   const val = document.getElementById('expense-date').value;
   const lbl = document.getElementById('date-label');
   const btn = document.getElementById('date-display');
-  if (!val || val === todayStr()) {
-    lbl.textContent = 'Hoy';
-    btn.classList.remove('date-set');
-  } else {
-    const d = new Date(val + 'T12:00:00');
-    lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'});
-    btn.classList.add('date-set');
-  }
+  if (!val || val === todayStr()) { lbl.textContent = 'Hoy'; btn.classList.remove('date-set'); }
+  else { const d = new Date(val + 'T12:00:00'); lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'}); btn.classList.add('date-set'); }
 }
 
 function getSelectedDate() {
   const val = document.getElementById('expense-date').value;
   if (!val) return new Date().toISOString();
-  const d = new Date(val + 'T' + new Date().toTimeString().slice(0,8));
-  return d.toISOString();
+  return new Date(val + 'T' + new Date().toTimeString().slice(0,8)).toISOString();
 }
 
-/* ── ADD / DELETE ── */
 async function addExpense() {
   const desc = document.getElementById('desc').value.trim();
   const cat = document.getElementById('cat').value;
@@ -395,7 +384,6 @@ async function addExpense() {
   const currency = document.getElementById('currency').value;
   if (!desc) { flash('desc'); return; }
   if (!amount || amount <= 0) { flash('amount'); return; }
-
   const expense = {id: Date.now(), desc, cat, amount, currency, date: getSelectedDate()};
   expenses.unshift(expense);
   expenses.sort((a,b) => new Date(b.date) - new Date(a.date));
@@ -421,7 +409,6 @@ async function deleteExpense(id) {
   try { await sheetPost({action:'delete', id}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
 }
 
-/* ── EDIT ── */
 let editingId = null;
 
 function openEdit(id) {
@@ -432,14 +419,12 @@ function openEdit(id) {
   document.getElementById('edit-cat').value = e.cat;
   document.getElementById('edit-amount').value = e.amount;
   document.getElementById('edit-currency').value = e.currency;
-  const dateStr = new Date(e.date).toISOString().slice(0,10);
-  document.getElementById('edit-expense-date').value = dateStr;
+  document.getElementById('edit-expense-date').value = new Date(e.date).toISOString().slice(0,10);
   onEditDateChange();
   document.getElementById('edit-modal').classList.add('open');
 }
 
 function closeEditBtn() { document.getElementById('edit-modal').classList.remove('open'); }
-
 function closeEdit(ev) { if (ev.target === document.getElementById('edit-modal')) closeEditBtn(); }
 
 function openEditDatePicker() {
@@ -452,11 +437,7 @@ function onEditDateChange() {
   const lbl = document.getElementById('edit-date-label');
   const btn = document.getElementById('edit-date-display');
   if (!val || val === todayStr()) { lbl.textContent = 'Hoy'; btn.classList.remove('date-set'); }
-  else {
-    const d = new Date(val + 'T12:00:00');
-    lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'});
-    btn.classList.add('date-set');
-  }
+  else { const d = new Date(val + 'T12:00:00'); lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'}); btn.classList.add('date-set'); }
 }
 
 async function saveEdit() {
@@ -467,11 +448,7 @@ async function saveEdit() {
   const dateVal = document.getElementById('edit-expense-date').value;
   if (!desc) { flash('edit-desc'); return; }
   if (!amount || amount <= 0) { flash('edit-amount'); return; }
-
-  const dateISO = dateVal
-    ? new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString()
-    : new Date().toISOString();
-
+  const dateISO = dateVal ? new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString() : new Date().toISOString();
   const idx = expenses.findIndex(x => x.id === editingId);
   if (idx === -1) return;
   expenses[idx] = { ...expenses[idx], desc, cat, amount, currency, date: dateISO };
@@ -489,7 +466,6 @@ function exportData() {
   const a = document.createElement('a'); a.href=url; a.download='mis-gastos-'+todayStr()+'.json'; a.click(); URL.revokeObjectURL(url);
 }
 
-/* ── CATEGORY FILTER DROPDOWN ── */
 function buildCatCheckboxes() {
   const container = document.getElementById('cat-checkboxes');
   container.innerHTML = ALL_CATS.map(c => `
@@ -531,18 +507,9 @@ function toggleAllCats() {
 function updateFilterLabel() {
   const btn = document.getElementById('cat-filter-btn');
   const lbl = document.getElementById('cat-filter-label');
-  if (activeCategories === null) {
-    lbl.textContent = 'Todas las categorías';
-    btn.classList.remove('has-filter');
-  } else if (activeCategories.size === 0) {
-    lbl.textContent = 'Sin categorías';
-    btn.classList.add('has-filter');
-  } else {
-    lbl.textContent = activeCategories.size === 1
-      ? [...activeCategories][0]
-      : `${activeCategories.size} categorías`;
-    btn.classList.add('has-filter');
-  }
+  if (activeCategories === null) { lbl.textContent = 'Todas las categorías'; btn.classList.remove('has-filter'); }
+  else if (activeCategories.size === 0) { lbl.textContent = 'Sin categorías'; btn.classList.add('has-filter'); }
+  else { lbl.textContent = activeCategories.size === 1 ? [...activeCategories][0] : `${activeCategories.size} categorías`; btn.classList.add('has-filter'); }
 }
 
 document.addEventListener('click', e => {
@@ -552,7 +519,6 @@ document.addEventListener('click', e => {
   }
 });
 
-/* ── RENDER ── */
 function lastN(n) {
   const c = new Date(); c.setDate(c.getDate()-n);
   return expenses.filter(e => new Date(e.date) >= c);
@@ -692,7 +658,6 @@ function showPage(name) {
 
 function renderAll() { renderHero(); renderList(); }
 
-/* ── INIT ── */
 document.getElementById('desc').addEventListener('keydown', e => { if (e.key==='Enter') document.getElementById('amount').focus(); });
 document.getElementById('amount').addEventListener('keydown', e => { if (e.key==='Enter') addExpense(); });
 document.getElementById('header-date').textContent = new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
