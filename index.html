@@ -8,7 +8,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root { --bg: #121212; --surface: #1C1C1C; --surface2: #2D2D2D; --surface3: #3A3A3A; --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12); --text: #F5F5F5; --text2: #A0A0A0; --text3: #636363; --accent: #6C63FF; --accent2: #8B84FF; --red: #FF453A; --header-bg: rgba(18,18,18,0.92); }
-  body.light { --bg: #F0EBE0; --surface: #FAF7F2; --surface2: #EDE8DE; --surface3: #E0D9CC; --border: rgba(27,58,107,0.10); --border2: rgba(27,58,107,0.18); --text: #1A1A2E; --text2: #4A5568; --text3: #8A94A6; --accent: #1B3A6B; --accent2: #2A5298; --red: #C0392B; --header-bg: rgba(240,235,224,0.92); }
+  body.light { --bg: #EDE8DF; --surface: #F7F3EC; --surface2: #DDD7CC; --surface3: #CEC7BA; --border: rgba(27,58,107,0.14); --border2: rgba(27,58,107,0.28); --text: #0F1B2D; --text2: #2E4065; --text3: #6B7A8D; --accent: #1B3A6B; --accent2: #2A5298; --red: #B03020; --header-bg: rgba(237,232,223,0.95); }
   body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 60px; transition: background 0.3s, color 0.3s; }
 
   header { background: var(--header-bg); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 0.5px solid var(--border); position: sticky; top: 0; z-index: 100; padding: 16px 20px 12px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; transition: background 0.3s; }
@@ -118,9 +118,10 @@
   .empty-state .icon { font-size: 36px; margin-bottom: 10px; } .empty-state p { font-size: 13px; }
   .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .list-title { font-size: 14px; font-weight: 600; color: var(--text); }
-  .backup-row { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
-  .btn-backup { flex: 1; height: 38px; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: border-color 0.15s, color 0.15s; }
+  .backup-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; flex-wrap: nowrap; }
+  .btn-backup { flex: 1; min-width: 0; height: 38px; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; transition: border-color 0.15s, color 0.15s; overflow: hidden; }
   .btn-backup:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-backup span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .btn-theme { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, color 0.15s, background 0.3s; flex-shrink: 0; }
   .btn-theme:hover { border-color: var(--accent); color: var(--accent); }
   body.light .hero-card { background: linear-gradient(135deg, #1B3A6B 0%, #2A5298 100%); }
@@ -220,8 +221,8 @@
 
   <div>
     <div class="backup-row">
-      <button class="btn-backup" onclick="loadFromSheet()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-3.73"/></svg>Sincronizar</button>
-      <button class="btn-backup" onclick="exportData()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Exportar backup</button>
+      <button class="btn-backup" onclick="loadFromSheet()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.18-3.73"/></svg><span>Sincronizar</span></button>
+      <button class="btn-backup" onclick="exportData()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>Exportar</span></button>
       <button class="btn-theme" id="theme-btn" onclick="toggleTheme()">🌙</button>
     </div>
     <div class="list-header"><div class="list-title" id="list-count">Historial</div></div>
@@ -322,18 +323,13 @@ const SYM = {ARS:'$',USD:'$',EUR:'€'};
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbymvCsjlcuGNRU9wHygE5B1JJVIv2O7-CPtsd5U2SaXWjgplFRHu0Fm1ceqn_M_gB9W/exec';
 
 let expenses = JSON.parse(localStorage.getItem('expenses_v1') || '[]');
-let activeCategories = null; // null = todas; Set vacío = ninguna
+let activeCategories = null;
 let evolPeriod = 7;
 let evolChart = null;
 
 function saveLocal() { localStorage.setItem('expenses_v1', JSON.stringify(expenses)); }
+function isVisible(e) { if (activeCategories === null) return true; return activeCategories.has(e.cat); }
 
-function isVisible(e) {
-  if (activeCategories === null) return true;
-  return activeCategories.has(e.cat);
-}
-
-/* ── SYNC STATUS ── */
 function setSyncStatus(s) {
   const el = document.getElementById('sync-status');
   if (!el) return;
@@ -341,7 +337,6 @@ function setSyncStatus(s) {
   el.textContent = m[s].text; el.style.color = m[s].color;
 }
 
-/* ── SHEET ── */
 async function sheetPost(p) { return fetch(SHEET_URL, {method:'POST',mode:'no-cors',body:JSON.stringify(p)}); }
 
 function loadFromSheet() {
@@ -362,7 +357,6 @@ function loadFromSheet() {
   document.head.appendChild(sc);
 }
 
-/* ── DATE PICKER ── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
 function openDatePicker() {
@@ -375,24 +369,16 @@ function onDateChange() {
   const val = document.getElementById('expense-date').value;
   const lbl = document.getElementById('date-label');
   const btn = document.getElementById('date-display');
-  if (!val || val === todayStr()) {
-    lbl.textContent = 'Hoy';
-    btn.classList.remove('date-set');
-  } else {
-    const d = new Date(val + 'T12:00:00');
-    lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'});
-    btn.classList.add('date-set');
-  }
+  if (!val || val === todayStr()) { lbl.textContent = 'Hoy'; btn.classList.remove('date-set'); }
+  else { const d = new Date(val + 'T12:00:00'); lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'}); btn.classList.add('date-set'); }
 }
 
 function getSelectedDate() {
   const val = document.getElementById('expense-date').value;
   if (!val) return new Date().toISOString();
-  const d = new Date(val + 'T' + new Date().toTimeString().slice(0,8));
-  return d.toISOString();
+  return new Date(val + 'T' + new Date().toTimeString().slice(0,8)).toISOString();
 }
 
-/* ── ADD / DELETE ── */
 async function addExpense() {
   const desc = document.getElementById('desc').value.trim();
   const cat = document.getElementById('cat').value;
@@ -400,16 +386,11 @@ async function addExpense() {
   const currency = document.getElementById('currency').value;
   if (!desc) { flash('desc'); return; }
   if (!amount || amount <= 0) { flash('amount'); return; }
-
   const expense = {id: Date.now(), desc, cat, amount, currency, date: getSelectedDate()};
-  expenses.unshift(expense);
-  expenses.sort((a,b) => new Date(b.date) - new Date(a.date));
+  expenses.unshift(expense); expenses.sort((a,b) => new Date(b.date) - new Date(a.date));
   saveLocal();
-  document.getElementById('desc').value = '';
-  document.getElementById('amount').value = '';
-  document.getElementById('expense-date').value = '';
-  onDateChange();
-  renderAll();
+  document.getElementById('desc').value = ''; document.getElementById('amount').value = '';
+  document.getElementById('expense-date').value = ''; onDateChange(); renderAll();
   setSyncStatus('syncing');
   try { await sheetPost({action:'add', expense}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
 }
@@ -426,25 +407,21 @@ async function deleteExpense(id) {
   try { await sheetPost({action:'delete', id}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
 }
 
-/* ── EDIT ── */
 let editingId = null;
 
 function openEdit(id) {
-  const e = expenses.find(x => x.id === id);
-  if (!e) return;
+  const e = expenses.find(x => x.id === id); if (!e) return;
   editingId = id;
   document.getElementById('edit-desc').value = e.desc;
   document.getElementById('edit-cat').value = e.cat;
   document.getElementById('edit-amount').value = e.amount;
   document.getElementById('edit-currency').value = e.currency;
-  const dateStr = new Date(e.date).toISOString().slice(0,10);
-  document.getElementById('edit-expense-date').value = dateStr;
+  document.getElementById('edit-expense-date').value = new Date(e.date).toISOString().slice(0,10);
   onEditDateChange();
   document.getElementById('edit-modal').classList.add('open');
 }
 
 function closeEditBtn() { document.getElementById('edit-modal').classList.remove('open'); }
-
 function closeEdit(ev) { if (ev.target === document.getElementById('edit-modal')) closeEditBtn(); }
 
 function openEditDatePicker() {
@@ -457,11 +434,7 @@ function onEditDateChange() {
   const lbl = document.getElementById('edit-date-label');
   const btn = document.getElementById('edit-date-display');
   if (!val || val === todayStr()) { lbl.textContent = 'Hoy'; btn.classList.remove('date-set'); }
-  else {
-    const d = new Date(val + 'T12:00:00');
-    lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'});
-    btn.classList.add('date-set');
-  }
+  else { const d = new Date(val + 'T12:00:00'); lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'}); btn.classList.add('date-set'); }
 }
 
 async function saveEdit() {
@@ -472,18 +445,11 @@ async function saveEdit() {
   const dateVal = document.getElementById('edit-expense-date').value;
   if (!desc) { flash('edit-desc'); return; }
   if (!amount || amount <= 0) { flash('edit-amount'); return; }
-
-  const dateISO = dateVal
-    ? new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString()
-    : new Date().toISOString();
-
-  const idx = expenses.findIndex(x => x.id === editingId);
-  if (idx === -1) return;
+  const dateISO = dateVal ? new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString() : new Date().toISOString();
+  const idx = expenses.findIndex(x => x.id === editingId); if (idx === -1) return;
   expenses[idx] = { ...expenses[idx], desc, cat, amount, currency, date: dateISO };
   expenses.sort((a,b) => new Date(b.date) - new Date(a.date));
-  saveLocal();
-  closeEditBtn();
-  renderAll();
+  saveLocal(); closeEditBtn(); renderAll();
   setSyncStatus('syncing');
   try { await sheetPost({action:'update', expense: expenses.find(x => x.id === editingId)}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
 }
@@ -494,7 +460,6 @@ function exportData() {
   const a = document.createElement('a'); a.href=url; a.download='mis-gastos-'+todayStr()+'.json'; a.click(); URL.revokeObjectURL(url);
 }
 
-/* ── CATEGORY FILTER DROPDOWN ── */
 function buildCatCheckboxes() {
   const container = document.getElementById('cat-checkboxes');
   container.innerHTML = ALL_CATS.map(c => `
@@ -522,32 +487,20 @@ function onCatCheck() {
   activeCategories = checked.length === ALL_CATS.length ? null : new Set(checked);
   const tb = document.getElementById('toggle-all-btn');
   if (tb) tb.textContent = activeCategories === null ? 'Deseleccionar todo' : 'Seleccionar todo';
-  updateFilterLabel();
-  renderDashboard();
+  updateFilterLabel(); renderDashboard();
 }
 
 function toggleAllCats() {
   activeCategories = activeCategories === null ? new Set() : null;
-  buildCatCheckboxes();
-  updateFilterLabel();
-  renderDashboard();
+  buildCatCheckboxes(); updateFilterLabel(); renderDashboard();
 }
 
 function updateFilterLabel() {
   const btn = document.getElementById('cat-filter-btn');
   const lbl = document.getElementById('cat-filter-label');
-  if (activeCategories === null) {
-    lbl.textContent = 'Todas las categorías';
-    btn.classList.remove('has-filter');
-  } else if (activeCategories.size === 0) {
-    lbl.textContent = 'Sin categorías';
-    btn.classList.add('has-filter');
-  } else {
-    lbl.textContent = activeCategories.size === 1
-      ? [...activeCategories][0]
-      : `${activeCategories.size} categorías`;
-    btn.classList.add('has-filter');
-  }
+  if (activeCategories === null) { lbl.textContent = 'Todas las categorías'; btn.classList.remove('has-filter'); }
+  else if (activeCategories.size === 0) { lbl.textContent = 'Sin categorías'; btn.classList.add('has-filter'); }
+  else { lbl.textContent = activeCategories.size === 1 ? [...activeCategories][0] : `${activeCategories.size} categorías`; btn.classList.add('has-filter'); }
 }
 
 document.addEventListener('click', e => {
@@ -557,13 +510,8 @@ document.addEventListener('click', e => {
   }
 });
 
-/* ── RENDER ── */
-function lastN(n) {
-  const c = new Date(); c.setDate(c.getDate()-n);
-  return expenses.filter(e => new Date(e.date) >= c);
-}
+function lastN(n) { const c = new Date(); c.setDate(c.getDate()-n); return expenses.filter(e => new Date(e.date) >= c); }
 function last30() { return lastN(30); }
-
 function fmt(n) { return n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtInt(n) { return Math.round(n).toLocaleString('es-AR'); }
 
@@ -669,17 +617,23 @@ function renderEvolChart() {
   }
   if (evolChart) { evolChart.destroy(); evolChart = null; }
   const ctx = document.getElementById('chart-evol').getContext('2d');
+  const isLight = document.body.classList.contains('light');
+  const lineColor = isLight ? '#1B3A6B' : '#6C63FF';
+  const gradTop = isLight ? 'rgba(27,58,107,0.25)' : 'rgba(108,99,255,0.35)';
+  const gradBot = isLight ? 'rgba(27,58,107,0.02)' : 'rgba(108,99,255,0.02)';
+  const tickColor = isLight ? '#6B7A8D' : '#636363';
+  const gridColor = isLight ? 'rgba(27,58,107,0.06)' : 'rgba(255,255,255,0.04)';
   const grad = ctx.createLinearGradient(0,0,0,200);
-  grad.addColorStop(0,'rgba(108,99,255,0.35)'); grad.addColorStop(1,'rgba(108,99,255,0.02)');
+  grad.addColorStop(0, gradTop); grad.addColorStop(1, gradBot);
   evolChart = new Chart(ctx, {
     type: 'line',
-    data: {labels, datasets:[{data, fill:true, backgroundColor:grad, borderColor:'#6C63FF', borderWidth:2, pointBackgroundColor:'#6C63FF', pointRadius:3, pointHoverRadius:5, tension:0.4}]},
+    data: {labels, datasets:[{data, fill:true, backgroundColor:grad, borderColor:lineColor, borderWidth:2, pointBackgroundColor:lineColor, pointRadius:3, pointHoverRadius:5, tension:0.4}]},
     options: {
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false},tooltip:{backgroundColor:'#2D2D2D',titleColor:'#A0A0A0',bodyColor:'#F5F5F5',borderColor:'rgba(255,255,255,0.1)',borderWidth:1,callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString('es-AR')}}},
       scales:{
-        x:{ticks:{color:'#636363',font:{size:10},maxRotation:0},grid:{color:'rgba(255,255,255,0.04)'}},
-        y:{ticks:{color:'#636363',font:{size:10},callback:v=>'$'+(v>=1000?Math.round(v/1000)+'k':v)},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true}
+        x:{ticks:{color:tickColor,font:{size:10},maxRotation:0},grid:{color:gridColor}},
+        y:{ticks:{color:tickColor,font:{size:10},callback:v=>'$'+(v>=1000?Math.round(v/1000)+'k':v)},grid:{color:gridColor},beginAtZero:true}
       }
     }
   });
@@ -697,11 +651,11 @@ function showPage(name) {
 
 function renderAll() { renderHero(); renderList(); }
 
-/* ── INIT ── */
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
   document.getElementById('theme-btn').textContent = isLight ? '🌑' : '🌙';
   localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  if (document.getElementById('page-dashboard').classList.contains('active')) renderEvolChart();
 }
 
 const savedTheme = localStorage.getItem('theme');
