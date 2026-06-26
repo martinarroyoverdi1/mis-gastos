@@ -76,7 +76,8 @@
   .date-btn { height: 44px; border-radius: 12px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 14px; font-family: inherit; font-weight: 500; padding: 0 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: border-color 0.15s, color 0.15s; white-space: nowrap; }
   .date-btn.date-set { color: var(--text); border-color: var(--accent); }
   .date-btn svg { flex-shrink: 0; }
-  input[type="date"].hidden-date { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
+  .date-field { position: relative; }
+  input[type="date"].hidden-date { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; z-index: 1; }
 
   .btn-add { width: 100%; height: 44px; border-radius: 12px; background: var(--accent); color: white; font-size: 14px; font-weight: 600; font-family: inherit; border: none; cursor: pointer; transition: background 0.15s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-add:hover { background: var(--accent2); } .btn-add:active { transform: scale(0.99); }
@@ -202,11 +203,13 @@
       </div>
       <div class="field">
         <label>Fecha</label>
-        <button class="date-btn" id="date-display" onclick="openDatePicker()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span id="date-label">Hoy</span>
-        </button>
-        <input type="date" class="hidden-date" id="expense-date" onchange="onDateChange()">
+        <div class="date-field">
+          <button class="date-btn" id="date-display">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="date-label">Hoy</span>
+          </button>
+          <input type="date" class="hidden-date" id="expense-date" onchange="onDateChange()">
+        </div>
       </div>
     </div>
     <div class="form-grid three">
@@ -300,11 +303,13 @@
       </div>
       <div class="field">
         <label>Fecha</label>
-        <button class="date-btn" id="edit-date-display" onclick="openEditDatePicker()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span id="edit-date-label">Hoy</span>
-        </button>
-        <input type="date" class="hidden-date" id="edit-expense-date" onchange="onEditDateChange()">
+        <div class="date-field">
+          <button class="date-btn" id="edit-date-display">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="edit-date-label">Hoy</span>
+          </button>
+          <input type="date" class="hidden-date" id="edit-expense-date" onchange="onEditDateChange()">
+        </div>
       </div>
     </div>
     <div class="form-grid three">
