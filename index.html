@@ -99,6 +99,20 @@
   .cb-ARS { background: rgba(48,209,88,0.15); color: #30D158; } .cb-USD { background: rgba(10,132,255,0.15); color: #0A84FF; } .cb-EUR { background: rgba(255,214,10,0.15); color: #FFD60A; }
   .btn-del { width: 28px; height: 28px; border-radius: 7px; background: rgba(255,69,58,0.1); border: none; cursor: pointer; color: var(--red); display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; }
   .btn-del:hover { background: rgba(255,69,58,0.2); }
+  .btn-edit { width: 28px; height: 28px; border-radius: 7px; background: rgba(108,99,255,0.1); border: none; cursor: pointer; color: var(--accent); display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; }
+  .btn-edit:hover { background: rgba(108,99,255,0.2); }
+  .item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 300; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px 20px 36px; width: 100%; max-width: 540px; transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.32,0.72,0,1); }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-size: 17px; font-weight: 700; color: var(--text); }
+  .modal-close { width: 30px; height: 30px; border-radius: 50%; background: var(--surface2); border: none; cursor: pointer; color: var(--text2); font-size: 18px; display: flex; align-items: center; justify-content: center; line-height: 1; }
+  .btn-save { width: 100%; height: 44px; border-radius: 12px; background: var(--accent); color: white; font-size: 14px; font-weight: 600; font-family: inherit; border: none; cursor: pointer; margin-top: 14px; transition: background 0.15s; }
+  .btn-save:hover { background: var(--accent2); }
   .empty-state { text-align: center; padding: 48px 24px; color: var(--text3); }
   .empty-state .icon { font-size: 36px; margin-bottom: 10px; } .empty-state p { font-size: 13px; }
   .list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
@@ -225,7 +239,6 @@
       </button>
       <div class="cat-dropdown" id="cat-dropdown" style="display:none">
         <div class="cat-dropdown-header">
-          <span>Categorías</span>
           <button id="toggle-all-btn" onclick="toggleAllCats()">Deseleccionar todo</button>
         </div>
         <div id="cat-checkboxes"></div>
@@ -249,6 +262,52 @@
   </div>
   <div class="card"><div class="card-title"><div class="dot" style="background:#FFD60A"></div><span id="cat-breakdown-title">Por categoría (7 días)</span></div><div class="cat-breakdown" id="cat-breakdown"></div></div>
 </div></div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal" onclick="closeEdit(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Editar gasto</div>
+      <button class="modal-close" onclick="closeEditBtn()">✕</button>
+    </div>
+    <div class="form-grid full" style="margin-bottom:10px">
+      <div class="field"><label for="edit-desc">Descripción</label><input type="text" id="edit-desc" maxlength="80"></div>
+    </div>
+    <div class="form-grid" style="margin-bottom:10px">
+      <div class="field">
+        <label for="edit-cat">Categoría</label>
+        <select id="edit-cat">
+          <option value="Comida">Comida</option>
+          <option value="Transporte">Transporte</option>
+          <option value="Super">Super</option>
+          <option value="Salud">Salud</option>
+          <option value="Ocio">Ocio</option>
+          <option value="Ropa">Ropa</option>
+          <option value="Servicios">Servicios</option>
+          <option value="Educación">Educación</option>
+          <option value="Viajes">Viajes</option>
+          <option value="Tecnología">Tecnología</option>
+          <option value="Hogar">Hogar</option>
+          <option value="Regalos">Regalos</option>
+          <option value="Otros">Otros</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Fecha</label>
+        <button class="date-btn" id="edit-date-display" onclick="openEditDatePicker()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span id="edit-date-label">Hoy</span>
+        </button>
+        <input type="date" class="hidden-date" id="edit-expense-date" onchange="onEditDateChange()">
+      </div>
+    </div>
+    <div class="form-grid three">
+      <div class="field"><label for="edit-amount">Monto</label><input type="number" id="edit-amount" min="0" step="0.01"></div>
+      <div class="field"><label for="edit-currency">Moneda</label><select id="edit-currency"><option value="ARS">ARS</option><option value="USD">USD</option><option value="EUR">EUR</option></select></div>
+      <div class="field"><label>&nbsp;</label><button class="btn-save" onclick="saveEdit()">Guardar</button></div>
+    </div>
+  </div>
+</div>
 
 <script>
 const ALL_CATS = ['Comida','Transporte','Super','Salud','Ocio','Ropa','Servicios','Educación','Viajes','Tecnología','Hogar','Regalos','Otros'];
@@ -360,6 +419,68 @@ async function deleteExpense(id) {
   expenses = expenses.filter(e => e.id !== id); saveLocal(); renderAll();
   setSyncStatus('syncing');
   try { await sheetPost({action:'delete', id}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
+}
+
+/* ── EDIT ── */
+let editingId = null;
+
+function openEdit(id) {
+  const e = expenses.find(x => x.id === id);
+  if (!e) return;
+  editingId = id;
+  document.getElementById('edit-desc').value = e.desc;
+  document.getElementById('edit-cat').value = e.cat;
+  document.getElementById('edit-amount').value = e.amount;
+  document.getElementById('edit-currency').value = e.currency;
+  const dateStr = new Date(e.date).toISOString().slice(0,10);
+  document.getElementById('edit-expense-date').value = dateStr;
+  onEditDateChange();
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEditBtn() { document.getElementById('edit-modal').classList.remove('open'); }
+
+function closeEdit(ev) { if (ev.target === document.getElementById('edit-modal')) closeEditBtn(); }
+
+function openEditDatePicker() {
+  const inp = document.getElementById('edit-expense-date');
+  inp.showPicker ? inp.showPicker() : inp.click();
+}
+
+function onEditDateChange() {
+  const val = document.getElementById('edit-expense-date').value;
+  const lbl = document.getElementById('edit-date-label');
+  const btn = document.getElementById('edit-date-display');
+  if (!val || val === todayStr()) { lbl.textContent = 'Hoy'; btn.classList.remove('date-set'); }
+  else {
+    const d = new Date(val + 'T12:00:00');
+    lbl.textContent = d.toLocaleDateString('es-AR', {day:'numeric',month:'short'});
+    btn.classList.add('date-set');
+  }
+}
+
+async function saveEdit() {
+  const desc = document.getElementById('edit-desc').value.trim();
+  const cat = document.getElementById('edit-cat').value;
+  const amount = parseFloat(document.getElementById('edit-amount').value);
+  const currency = document.getElementById('edit-currency').value;
+  const dateVal = document.getElementById('edit-expense-date').value;
+  if (!desc) { flash('edit-desc'); return; }
+  if (!amount || amount <= 0) { flash('edit-amount'); return; }
+
+  const dateISO = dateVal
+    ? new Date(dateVal + 'T' + new Date().toTimeString().slice(0,8)).toISOString()
+    : new Date().toISOString();
+
+  const idx = expenses.findIndex(x => x.id === editingId);
+  if (idx === -1) return;
+  expenses[idx] = { ...expenses[idx], desc, cat, amount, currency, date: dateISO };
+  expenses.sort((a,b) => new Date(b.date) - new Date(a.date));
+  saveLocal();
+  closeEditBtn();
+  renderAll();
+  setSyncStatus('syncing');
+  try { await sheetPost({action:'update', expense: expenses.find(x => x.id === editingId)}); setSyncStatus('ok'); } catch { setSyncStatus('error'); }
 }
 
 function exportData() {
@@ -481,9 +602,14 @@ function renderList() {
         <div class="expense-amount">${SYM[e.currency]}${fmt(e.amount)}</div>
         <span class="currency-badge cb-${e.currency}">${e.currency}</span>
       </div>
-      <button class="btn-del" onclick="deleteExpense(${e.id})">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      </button>
+      <div class="item-actions">
+        <button class="btn-edit" onclick="openEdit(${e.id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn-del" onclick="deleteExpense(${e.id})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
     </div>
   `).join('');
 }
