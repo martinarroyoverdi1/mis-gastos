@@ -77,9 +77,9 @@
   .date-btn.date-set { color: var(--text); border-color: var(--accent); }
   .date-btn svg { flex-shrink: 0; }
   .date-field { position: relative; }
-  input[type="date"].date-input-styled { height: 44px; border-radius: 12px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 14px; font-family: inherit; font-weight: 500; padding: 0 14px; width: 100%; cursor: pointer; appearance: none; -webkit-appearance: none; outline: none; text-align: left; }
-  input[type="date"].date-input-styled::-webkit-datetime-edit { color: var(--text2); }
-  input[type="date"].date-input-styled.date-set { color: var(--text); border-color: var(--accent); }
+  .date-display-btn { height: 44px; border-radius: 12px; border: 1px solid var(--border2); background: var(--surface2); color: var(--text2); font-size: 14px; font-family: inherit; font-weight: 500; padding: 0 14px; width: 100%; cursor: pointer; outline: none; text-align: left; display: flex; align-items: center; }
+  .date-display-btn.date-set { color: var(--text); border-color: var(--accent); }
+  input[type="date"].date-input-hidden { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; }
   input[type="date"].hidden-date { display: none; }
 
   .btn-add { width: 100%; height: 44px; border-radius: 12px; background: var(--accent); color: white; font-size: 14px; font-weight: 600; font-family: inherit; border: none; cursor: pointer; transition: background 0.15s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -206,7 +206,10 @@
       </div>
       <div class="field">
         <label>Fecha</label>
-        <input type="date" class="date-input-styled" id="expense-date" onchange="onDateChange()">
+        <div class="date-field">
+          <button type="button" class="date-display-btn" id="expense-date-btn" onclick="openDatePicker('expense-date','expense-date-btn')">Hoy</button>
+          <input type="date" class="date-input-hidden" id="expense-date" onchange="onDateChange()" onblur="onDateBlur('expense-date','expense-date-btn')">
+        </div>
       </div>
     </div>
     <div class="form-grid three">
@@ -300,7 +303,10 @@
       </div>
       <div class="field">
         <label>Fecha</label>
-        <input type="date" class="date-input-styled" id="edit-expense-date" onchange="onEditDateChange()">
+        <div class="date-field">
+          <button type="button" class="date-display-btn" id="edit-expense-date-btn" onclick="openDatePicker('edit-expense-date','edit-expense-date-btn')">Hoy</button>
+          <input type="date" class="date-input-hidden" id="edit-expense-date" onchange="onEditDateChange()" onblur="onDateBlur('edit-expense-date','edit-expense-date-btn')">
+        </div>
       </div>
     </div>
     <div class="form-grid three">
@@ -362,10 +368,37 @@ function loadFromSheet() {
 /* ── DATE PICKER ── */
 function todayStr() { return new Date().toISOString().slice(0,10); }
 
+function openDatePicker(inputId, btnId) {
+  const inp = document.getElementById(inputId);
+  inp.style.pointerEvents = 'all';
+  inp.style.opacity = '0';
+  inp.focus();
+  if (inp.showPicker) inp.showPicker();
+}
+
+function onDateBlur(inputId, btnId) {
+  const inp = document.getElementById(inputId);
+  inp.style.pointerEvents = 'none';
+  updateDateBtn(inputId, btnId);
+}
+
+function updateDateBtn(inputId, btnId) {
+  const inp = document.getElementById(inputId);
+  const btn = document.getElementById(btnId);
+  const val = inp.value;
+  if (!val) { btn.textContent = 'Hoy'; btn.classList.remove('date-set'); }
+  else if (val === todayStr()) { btn.textContent = 'Hoy'; btn.classList.remove('date-set'); }
+  else {
+    const d = new Date(val + 'T12:00:00');
+    btn.textContent = d.toLocaleDateString('es-AR', {day:'numeric', month:'short', year:'numeric'});
+    btn.classList.add('date-set');
+  }
+}
+
 function onDateChange() {
+  updateDateBtn('expense-date', 'expense-date-btn');
   const inp = document.getElementById('expense-date');
-  if (inp.value && inp.value !== todayStr()) inp.classList.add('date-set');
-  else inp.classList.remove('date-set');
+  inp.style.pointerEvents = 'none';
 }
 
 function getSelectedDate() {
@@ -431,9 +464,9 @@ function closeEditBtn() { document.getElementById('edit-modal').classList.remove
 function closeEdit(ev) { if (ev.target === document.getElementById('edit-modal')) closeEditBtn(); }
 
 function onEditDateChange() {
+  updateDateBtn('edit-expense-date', 'edit-expense-date-btn');
   const inp = document.getElementById('edit-expense-date');
-  if (inp.value && inp.value !== todayStr()) inp.classList.add('date-set');
-  else inp.classList.remove('date-set');
+  inp.style.pointerEvents = 'none';
 }
 
 async function saveEdit() {
